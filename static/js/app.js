@@ -165,16 +165,11 @@
     swipeHints.classList.remove("hidden");
   }
 
-  function toggleMeaning() {
-    if (currentIndex >= queue.length) return;
-    showingMeaning = !showingMeaning;
-    if (showingMeaning) {
-      cardFront.classList.add("hidden");
-      cardBack.classList.remove("hidden");
-    } else {
-      cardFront.classList.remove("hidden");
-      cardBack.classList.add("hidden");
-    }
+  function showMeaning() {
+    if (currentIndex >= queue.length || showingMeaning) return;
+    showingMeaning = true;
+    cardFront.classList.add("hidden");
+    cardBack.classList.remove("hidden");
   }
 
   // Actions
@@ -230,26 +225,42 @@
     window.speechSynthesis.speak(utterance);
   }
 
-  // Swipe handling
-  function onDragStart(e) {
-    if (currentIndex >= queue.length) return;
-    isDragging = true;
-    isSwipeGesture = false;
-    const point = e.touches ? e.touches[0] : e;
-    startX = point.clientX;
-    startY = point.clientY;
-    currentX = startX;
-    wordCard.style.transition = "none";
+  // Swipe / tap handling (Pointer Events — avoids mobile touch+mouse double fire)
+  const TAP_MOVE_LIMIT = 18;
+
+  function getSwipeDelta(endX, endY) {
+    return {
+      deltaX: endX - startX,
+      deltaY: endY - startY,
+    };
   }
 
-  function onDragMove(e) {
-    if (!isDragging) return;
-    const point = e.touches ? e.touches[0] : e;
-    currentX = point.clientX;
-    const deltaX = currentX - startX;
-    const deltaY = Math.abs(point.clientY - startY);
+  function resetCardTransform() {
+    wordCard.style.transition = "";
+    wordCard.style.transform = "";
+    wordCard.classList.remove("swiping-left", "swiping-right");
+  }
 
-    if (!isSwipeGesture && Math.abs(deltaX) > 10 && Math.abs(deltaX) > deltaY) {
+  function onPointerDown(e) {
+    if (currentIndex >= queue.length) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    isDragging = true;
+    isSwipeGesture = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    currentX = startX;
+    wordCard.style.transition = "none";
+    wordCard.setPointerCapture(e.pointerId);
+  }
+
+  function onPointerMove(e) {
+    if (!isDragging) return;
+
+    currentX = e.clientX;
+    const { deltaX, deltaY } = getSwipeDelta(e.clientX, e.clientY);
+
+    if (!isSwipeGesture && Math.abs(deltaX) > TAP_MOVE_LIMIT && Math.abs(deltaX) > Math.abs(deltaY)) {
       isSwipeGesture = true;
     }
 
@@ -269,26 +280,33 @@
     }
   }
 
-  function onDragEnd() {
+  function onPointerUp(e) {
     if (!isDragging) return;
     isDragging = false;
-    wordCard.style.transition = "";
 
-    const deltaX = currentX - startX;
-
-    if (isSwipeGesture && Math.abs(deltaX) >= SWIPE_THRESHOLD) {
-      if (deltaX < 0) {
-        markRemembered();
-      } else {
-        markForgotten();
-      }
-    } else if (!isSwipeGesture) {
-      toggleMeaning();
+    if (wordCard.hasPointerCapture(e.pointerId)) {
+      wordCard.releasePointerCapture(e.pointerId);
     }
 
-    wordCard.style.transform = "";
-    wordCard.classList.remove("swiping-left", "swiping-right");
+    const { deltaX, deltaY } = getSwipeDelta(e.clientX, e.clientY);
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    resetCardTransform();
     isSwipeGesture = false;
+
+    if (absX >= SWIPE_THRESHOLD && absX > absY) {
+      if (deltaX < 0) markRemembered();
+      else markForgotten();
+    } else if (absX <= TAP_MOVE_LIMIT && absY <= TAP_MOVE_LIMIT) {
+      showMeaning();
+    }
+  }
+
+  function onPointerCancel() {
+    if (!isDragging) return;
+    isDragging = false;
+    isSwipeGesture = false;
+    resetCardTransform();
   }
 
   // List views
@@ -373,7 +391,7 @@
       markForgotten();
     });
 
-    // Speak
+    $("#speakBtn").addEventListener("pointerdown", (e) => e.stopPropagation());
     $("#speakBtn").addEventListener("click", (e) => {
       e.stopPropagation();
       speakWord();
@@ -404,12 +422,10 @@
     });
 
     // Swipe / tap on card
-    wordCard.addEventListener("mousedown", onDragStart);
-    wordCard.addEventListener("touchstart", onDragStart, { passive: true });
-    document.addEventListener("mousemove", onDragMove);
-    document.addEventListener("touchmove", onDragMove, { passive: false });
-    document.addEventListener("mouseup", onDragEnd);
-    document.addEventListener("touchend", onDragEnd);
+    wordCard.addEventListener("pointerdown", onPointerDown);
+    wordCard.addEventListener("pointermove", onPointerMove);
+    wordCard.addEventListener("pointerup", onPointerUp);
+    wordCard.addEventListener("pointercancel", onPointerCancel);
 
     // Preload TTS voices
     if (window.speechSynthesis) {

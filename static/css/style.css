@@ -125,6 +125,7 @@ html, body {
   position: relative;
   transition: transform 0.1s ease, box-shadow 0.2s ease;
   will-change: transform;
+  touch-action: none;
 }
 
 .card.swiping-left {
