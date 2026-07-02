@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="IELTS 雅思词汇闪卡背诵工具">
+  <meta name="theme-color" content="#4f6ef7">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="IELTS背单词">
+  <title>IELTS 单词背诵</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="static/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="static/icon.svg">
+  <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1 class="header-title" id="pageTitle">IELTS 背单词</h1>
+      <div class="progress-info" id="progressInfo">0 / 0</div>
+    </header>
+
+    <main class="view active" id="studyView">
+      <div class="swipe-hints">
+        <span class="hint-left">← 记住了</span>
+        <span class="hint-right">没记住 →</span>
+      </div>
+
+      <div class="card-container" id="cardContainer">
+        <div class="card" id="wordCard">
+          <div class="card-front" id="cardFront">
+            <div class="word-text" id="wordText">加载中...</div>
+            <div class="phonetic-row">
+              <span class="phonetic-label">英音</span>
+              <span class="phonetic-text" id="ukPhonetic"></span>
+              <button class="speak-btn" id="speakBtn" title="播放英音" aria-label="播放英音">🔊</button>
+            </div>
+            <div class="tap-hint">点击卡片查看中文释义</div>
+          </div>
+          <div class="card-back hidden" id="cardBack">
+            <div class="word-text small" id="wordTextBack"></div>
+            <div class="meaning-text" id="meaningText"></div>
+            <div class="tap-hint">左滑记住 · 右滑未记住</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="action-btn forgot" id="btnForgot">✗ 没记住</button>
+        <button class="action-btn remember" id="btnRemember">✓ 记住了</button>
+      </div>
+
+      <div class="empty-state hidden" id="emptyState">
+        <div class="empty-icon">🎉</div>
+        <p>本轮单词已全部完成！</p>
+        <button class="primary-btn" id="btnRestart">重新开始</button>
+      </div>
+    </main>
+
+    <main class="view" id="rememberedView">
+      <div class="list-toolbar">
+        <span class="list-count" id="rememberedCount">0 个单词</span>
+        <button class="text-btn" id="btnClearRemembered">清空</button>
+      </div>
+      <div class="word-list" id="rememberedList"></div>
+      <div class="empty-list hidden" id="rememberedEmpty">还没有已记住的单词</div>
+    </main>
+
+    <main class="view" id="forgottenView">
+      <div class="list-toolbar">
+        <span class="list-count" id="forgottenCount">0 个单词</span>
+        <button class="text-btn" id="btnClearForgotten">清空</button>
+      </div>
+      <div class="word-list" id="forgottenList"></div>
+      <div class="empty-list hidden" id="forgottenEmpty">还没有未记住的单词</div>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-view="study">
+        <span class="nav-icon">📖</span>
+        <span>背诵</span>
+      </button>
+      <button class="nav-btn" data-view="remembered">
+        <span class="nav-icon">✅</span>
+        <span>已记住</span>
+        <span class="badge" id="rememberedBadge">0</span>
+      </button>
+      <button class="nav-btn" data-view="forgotten">
+        <span class="nav-icon">📝</span>
+        <span>未记住</span>
+        <span class="badge" id="forgottenBadge">0</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="static/js/app.js"></script>
+</body>
+</html>

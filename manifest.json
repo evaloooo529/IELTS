@@ -1,0 +1,19 @@
+{
+  "name": "IELTS 单词背诵",
+  "short_name": "IELTS背单词",
+  "description": "IELTS 雅思词汇闪卡背诵工具",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#4f6ef7",
+  "orientation": "portrait",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "static/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
